@@ -10,6 +10,17 @@
 
 在布局中引用：
 
-``` javascript ```
-示例：
+``` 
+<com.devilist.advancedtextview.SelectableTextView
+            android:id="@+id/ctv_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="#FDFBF8"
+            android:lineSpacingMultiplier="1.5"
+            android:padding="5dp"
+            android:textColor="#808080"
+            android:textSize="16sp"
+            app:forbiddenActionMenu="false"
+            app:textJustify="false" />
 ``` 
