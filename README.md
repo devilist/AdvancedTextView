@@ -6,4 +6,4 @@
 
 # 1. SelectableTextView
 
-![image](https://github.com/devilist/AdvancedTextView/images/master/selectabletextview.gif)
+![image](https://github.com/devilist/AdvancedTextView/raw/master/images/selectabletextview.gif)
