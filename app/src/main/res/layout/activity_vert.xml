@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FDFBF8"
+    android:orientation="vertical"
+    android:paddingTop="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="排版方式："
+            android:textColor="@android:color/black"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rg_text_orient"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_ltr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:checked="true"
+                android:text="从左向右" />
+
+            <RadioButton
+                android:id="@+id/rb_rtl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="从右向左" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="下划线  ："
+            android:textColor="@android:color/black"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rg_text_underline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_show"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="20dp"
+                android:checked="true"
+                android:text="显示" />
+
+            <RadioButton
+                android:id="@+id/rb_hidden"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="隐藏" />
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/scroll_rtl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbarSize="1dp"
+        android:visibility="visible">
+
+        <com.devilist.advancedtextview.VerticalTextView
+            android:id="@+id/vtv_text_ltr"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#FDFBF8"
+            android:gravity="center"
+            android:padding="15dp"
+            android:textColor="#808080"
+            android:textSize="16sp"
+            app:charSpacingExtra="2dp"
+            app:lineSpacingExtra="15dp"
+            app:showActionMenu="true"
+            app:textLeftToRight="true"
+            app:underLineColor="#CEAD53"
+            app:underLineText="true"
+            app:underLineWidth="2.5"
+            app:underlineOffset="3dp" />
+
+    </HorizontalScrollView>
+</LinearLayout>

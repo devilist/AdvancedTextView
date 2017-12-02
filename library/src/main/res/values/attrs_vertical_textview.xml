@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="VerticalTextView">
+        <attr name="lineSpacingExtra" format="dimension"/>
+        <attr name="charSpacingExtra" format="dimension"/>
+        <attr name="textLeftToRight" format="boolean"/>
+        <attr name="underLineText" format="boolean"/>
+        <attr name="underLineWidth" format="float"/>
+        <attr name="underLineColor" format="color"/>
+        <attr name="underlineOffset" format="dimension"/>
+        <attr name="textHeightLightColor" format="color"/>
+        <attr name="showActionMenu" format="boolean"/>
+    </declare-styleable>
+
+</resources>
