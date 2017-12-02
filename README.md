@@ -7,3 +7,9 @@
 # 1. SelectableTextView
 
 ![image](https://github.com/devilist/AdvancedTextView/raw/master/images/selectabletextview.gif)
+
+在布局中引用：
+
+``` java ```
+示例：
+``` java
