@@ -33,3 +33,26 @@
         selectableTextView.setForbiddenActionMenu(false);         // 是否禁用自定义ActionMenu 默认启用
         selectableTextView.setTextHighlightColor(0xff48543e);     // 文本高亮色
 ```
+
+设置ActionMenu监听：
+
+```
+selectableTextView.setCustomActionMenuCallBack(new CustomActionMenuCallBack() {
+    @Override
+        public boolean onCreateCustomActionMenu(ActionMenu menu) {
+            menu.setActionMenuBgColor(0xff666666);  // ActionMenu背景色
+            menu.setMenuItemTextColor(0xffffffff);  // ActionMenu文字颜色
+            List<String> titleList = new ArrayList<>();
+            titleList.add("翻译");
+            titleList.add("分享");
+            titleList.add("分享");
+            menu.addCustomMenuItem(titleList);  // 添加菜单
+            return false; // 返回false，保留默认菜单(全选/复制)；返回true，移除默认菜单
+     }
+     
+    @Override
+        public void onCustomActionItemClicked(String itemTitle, String selectedContent) {
+            Toast.makeText(this, "ActionMenu: " + itemTitle, Toast.LENGTH_SHORT).show();
+     }
+});
+```
