@@ -26,15 +26,16 @@
       app:textJustify="false" />                          // 是否启用两端对齐
 ``` 
 
-也可以在代码中引用：
+也可以在代码中设置：
 
 ```
         selectableTextView.setTextJustify(true);                  // 是否启用两端对齐 默认启用 
         selectableTextView.setForbiddenActionMenu(false);         // 是否禁用自定义ActionMenu 默认启用
         selectableTextView.setTextHighlightColor(0xff48543e);     // 文本高亮色
 ```
+注意：在代码中调用上述三个方法后需要 调用 inviladite() 或 postInviladite()方法通知View重绘
 
-设置ActionMenu监听：
+设置ActionMenu菜单点击监听：
 
 ```
 selectableTextView.setCustomActionMenuCallBack(new CustomActionMenuCallBack() {
@@ -58,4 +59,48 @@ selectableTextView.setCustomActionMenuCallBack(new CustomActionMenuCallBack() {
 ```
 
 # 2. VerticalTextView
+
+![image](https://github.com/devilist/AdvancedTextView/raw/master/images/verticaltextview.gif)
+
+在布局中引用：
+
+```
+<com.devilist.advancedtextview.VerticalTextView
+            android:id="@+id/vtv_text_ltr"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#FDFBF8"
+            android:gravity="center"
+            android:padding="15dp"
+            android:textColor="#808080"
+            android:textSize="16sp"
+            app:charSpacingExtra="2dp"                              // 字符间距
+            app:lineSpacingExtra="15dp"                             // 行间距
+            app:showActionMenu="true"                               // 是否开启ActionMenu，默认关闭
+            app:textLeftToRight="true"                              // 文字是否从左向右排版，默认从右向左排版
+            app:underLineText="true"                                // 是否显示下划线，默认不显示
+            app:underLineColor="#CEAD53"                            // 下划线颜色
+            app:underLineWidth="2.5"                                // 下划线线宽
+            app:textHeightLightColor="@color/colorAccent"           // 选中文字高亮色
+            app:underlineOffset="3dp" />                            // 下划线偏移量
+```
+
+在代码中设置：
+
+```
+    vtv_text_ltr.setLeftToRight(true)                  // 文字是否从左向右排版，默认从右向左排版
+                .setLineSpacingExtra(10)               // 行间距
+                .setCharSpacingExtra(2)                // 字符间距
+                .setUnderLineText(true)                // 是否显示下划线，默认不显示
+                .setShowActionMenu(true)               // 是否开启ActionMenu，默认关闭
+                .setUnderLineColor(0xffCEAD53)         // 下划线颜色
+                .setUnderLineWidth(1.0f)               // 下划线线宽
+                .setUnderLineOffset(3)                 // 下划线偏移量
+                .setTextHighlightColor(0xffCEAD53)     // 选中文字高亮色
+                .setCustomActionMenuCallBack(this);    // ActionMenu菜单点击监听
+```
+注意：在代码中调用上述方法后需要 调用 requestLayout()方法通知View重新布局
+
+设置ActionMenu菜单点击监听和SelectableTextView一样。
+
 

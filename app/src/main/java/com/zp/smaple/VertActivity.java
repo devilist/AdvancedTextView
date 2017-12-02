@@ -54,7 +54,8 @@ public class VertActivity extends AppCompatActivity implements
                 .setUnderLineColor(0xffCEAD53)
                 .setUnderLineWidth(1.0f)
                 .setUnderLineOffset(3)
-                .setTextHighlightColor(0xffCEAD53);
+                .setTextHighlightColor(0xffCEAD53)
+                .setCustomActionMenuCallBack(this);
 
         vtv_text_ltr.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +63,6 @@ public class VertActivity extends AppCompatActivity implements
                 Toast.makeText(VertActivity.this, "onClick事件", Toast.LENGTH_SHORT).show();
             }
         });
-        vtv_text_ltr.setCustomActionMenuCallBack(this);
 
         rg_text_orient = findViewById(R.id.rg_text_orient);
         rg_text_underline = findViewById(R.id.rg_text_underline);

@@ -47,6 +47,7 @@ public class HoriActivity extends AppCompatActivity implements
         selectableTextView.setText(Html.fromHtml(StringContentUtil.str_hanzi).toString());
         selectableTextView.clearFocus();
         selectableTextView.setTextJustify(true);
+        selectableTextView.setForbiddenActionMenu(false);
         selectableTextView.setCustomActionMenuCallBack(this);
         selectableTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,14 +93,14 @@ public class HoriActivity extends AppCompatActivity implements
 
     @Override
     public boolean onCreateCustomActionMenu(ActionMenu menu) {
-        menu.setActionMenuBgColor(0xff666666);
-        menu.setMenuItemTextColor(0xffffffff);
+        menu.setActionMenuBgColor(0xff666666);  // ActionMenu背景色
+        menu.setMenuItemTextColor(0xffffffff);  // ActionMenu文字颜色
         List<String> titleList = new ArrayList<>();
         titleList.add("翻译");
         titleList.add("分享");
         titleList.add("分享");
-        menu.addCustomMenuItem(titleList);
-        return false;
+        menu.addCustomMenuItem(titleList);  // 添加菜单
+        return false; // 返回false，保留默认菜单(全选/复制)；返回true，移除默认菜单
     }
 
     @Override

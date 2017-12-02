@@ -82,7 +82,7 @@ public class ActionMenu extends LinearLayout {
     /**
      * 添加默认MenuItem（全选，复制）
      */
-    public void addDefaultMenuItem() {
+    void addDefaultMenuItem() {
         View item_select_all = createMenuItem(DEFAULT_MENU_ITEM_TITLE_SELECT_ALL);
         View item_copy = createMenuItem(DEFAULT_MENU_ITEM_TITLE_COPY);
         addView(item_select_all);
@@ -119,7 +119,7 @@ public class ActionMenu extends LinearLayout {
     /**
      * 添加自定义MenuItem
      */
-    public void addCustomItem() {
+    void addCustomItem() {
         if (null == mItemTitleList || (null != mItemTitleList && mItemTitleList.size() == 0))
             return;
         // 去重
