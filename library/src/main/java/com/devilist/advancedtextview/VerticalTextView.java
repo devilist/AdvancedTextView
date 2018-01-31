@@ -254,14 +254,18 @@ public class VerticalTextView extends TextView {
             // 当嵌套在HorizontalScrollView时，MeasureSpec.getSize(widthMeasureSpec)返回0，因此需要特殊处理
             measuredWidth = mTextAreaRoughBound[0];
         } else {
-            measuredWidth = widthMode == MeasureSpec.AT_MOST ? mTextAreaRoughBound[0] : widthSize;
+            measuredWidth = widthMode == MeasureSpec.AT_MOST
+                    || widthMode == MeasureSpec.UNSPECIFIED ?
+                    mTextAreaRoughBound[0] : widthSize;
         }
 
         if (heightSize == 0) {
             // 当嵌套在ScrollView时，MeasureSpec.getSize(widthMeasureSpec)返回0，因此需要特殊处理
             measureHeight = mScreenHeight;
         } else {
-            measureHeight = heightMode == MeasureSpec.AT_MOST ? mTextAreaRoughBound[1] : heightSize;
+            measureHeight = heightMode == MeasureSpec.AT_MOST
+                    || heightMode == MeasureSpec.UNSPECIFIED ?
+                    mTextAreaRoughBound[1] : heightSize;
         }
         setMeasuredDimension(measuredWidth, measureHeight);
 
