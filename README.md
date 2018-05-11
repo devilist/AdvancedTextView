@@ -5,6 +5,7 @@
 具体介绍请移步博客：
 
 https://blog.csdn.net/devilist/article/details/54911641
+
 https://blog.csdn.net/devilist/article/details/79236665
 
 本库目前提供两个控件 SelectableTextView 和 VerticalTexview。
