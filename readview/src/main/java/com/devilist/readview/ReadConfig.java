@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-include ':app', ':library', ':readview'
+package com.devilist.readview;
+
+public class ReadConfig {
+
+
+
+}

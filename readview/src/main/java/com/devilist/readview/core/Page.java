@@ -14,4 +14,22 @@
  * limitations under the License.
  */
 
-include ':app', ':library', ':readview'
+package com.devilist.readview.core;
+
+import android.graphics.Canvas;
+
+import com.devilist.readview.core.Interface.IPage;
+
+import java.util.ArrayList;
+import java.util.List;
+
+final class Page implements IPage {
+
+    private List<Line> mLines = new ArrayList<>();
+
+
+    @Override
+    public void onDraw(Canvas canvas) {
+
+    }
+}

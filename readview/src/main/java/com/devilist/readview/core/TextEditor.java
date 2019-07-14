@@ -14,4 +14,28 @@
  * limitations under the License.
  */
 
-include ':app', ':library', ':readview'
+package com.devilist.readview.core;
+
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.view.MotionEvent;
+
+import com.devilist.readview.core.Interface.IEditor;
+import com.devilist.readview.core.Interface.IPage;
+
+
+final class TextEditor implements IEditor {
+
+    private IPage mPage;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return false;
+    }
+
+    @Override
+    public void onDraw(Canvas canvas) {
+        mPage.onDraw(canvas);
+
+    }
+}

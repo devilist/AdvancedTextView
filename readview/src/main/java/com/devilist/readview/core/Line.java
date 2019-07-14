@@ -14,4 +14,21 @@
  * limitations under the License.
  */
 
-include ':app', ':library', ':readview'
+package com.devilist.readview.core;
+
+import android.graphics.Canvas;
+import android.text.TextPaint;
+
+import com.devilist.readview.core.Interface.ILine;
+
+final class Line implements ILine {
+
+    private String mText = "";
+    private TextPaint mTextPaint;
+
+
+    @Override
+    public void onDraw(Canvas canvas) {
+
+    }
+}

@@ -14,4 +14,14 @@
  * limitations under the License.
  */
 
-include ':app', ':library', ':readview'
+package com.devilist.readview.core.Interface;
+
+import android.graphics.Canvas;
+import android.view.MotionEvent;
+
+public interface IEditor {
+
+    boolean onTouchEvent(MotionEvent event);
+
+    void onDraw(Canvas canvas);
+}

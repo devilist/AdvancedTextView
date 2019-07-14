@@ -14,4 +14,34 @@
  * limitations under the License.
  */
 
-include ':app', ':library', ':readview'
+package com.devilist.readview.core;
+
+import com.devilist.readview.ReadConfig;
+import com.devilist.readview.core.Interface.IPage;
+
+import java.util.List;
+
+class ReadManager {
+
+    private ReadConfig mConfig;
+
+    private List<IPage> mPageList;
+
+    private int mCurrentPage;
+
+    public ReadManager() {
+        mConfig = new ReadConfig();
+    }
+
+    public ReadConfig getConfig() {
+        return mConfig;
+    }
+
+    public void setConfig(ReadConfig config) {
+        this.mConfig = config;
+    }
+
+    public void loadText(String text) {
+
+    }
+}
