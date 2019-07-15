@@ -1,5 +1,5 @@
 /*
- * Copyright  2019  zengp
+ * Copyright  2019  admin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,11 @@
  * limitations under the License.
  */
 
-include ':app', ':readdemo'
-include ':library', ':readview'
+package com.devilist.readdemo;
+
+/**
+ * Created by zengpu on 2019/7/15
+ */
+public class StringUtil {
+
+}
