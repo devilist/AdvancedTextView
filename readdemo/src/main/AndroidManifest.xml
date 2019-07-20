@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright  2019  admin
+  ~ Copyright  2019  zengp
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@
         </activity>
 
         <activity android:name=".DemoActivity" />
+        <activity android:name=".Demo1Activity" />
 
     </application>
 

@@ -16,34 +16,25 @@
 
 package com.devilist.readdemo;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-/**
- * Created by zengpu on 2019/7/15
- */
-public class MainActivity extends AppCompatActivity {
+public class Demo1Activity extends AppCompatActivity {
+
+    public static void start(Context context) {
+        Intent starter = new Intent(context, Demo1Activity.class);
+//        starter.putExtra();
+        context.startActivity(starter);
+    }
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-
-        findViewById(R.id.tv_flip_demo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DemoActivity.start(MainActivity.this);
-            }
-        });
-        findViewById(R.id.tv_page_demo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Demo1Activity.start(MainActivity.this);
-            }
-        });
+        setContentView(R.layout.layout_demo1);
     }
 }
