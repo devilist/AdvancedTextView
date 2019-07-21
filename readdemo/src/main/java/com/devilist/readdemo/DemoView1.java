@@ -445,7 +445,7 @@ public class DemoView1 extends View {
 
             drawPageTurnFromCorner(ori, canvas);
             // 辅助线
-            drawLines(ori, canvas);
+//            drawLines(ori, canvas);
         }
 
     }
@@ -481,6 +481,23 @@ public class DemoView1 extends View {
         mPathTmp.close();
         canvas.drawPath(mPathTmp, mPaintShader);
         mPaintShader.setShader(null);
+
+//        mPaintShader.setStyle(Paint.Style.FILL);
+//        float x0 = (mPMove.x + mPMoveCenter.x) / 2;
+//        float y0 = (mPMove.y + mPMoveCenter.y) / 2;
+//        float x1 = (3 * mPMoveCenter.x + mP0.x) / 4;
+//        float y1 = (3 * mPMoveCenter.y + mP0.y) / 4;
+//        LinearGradient half1 = new LinearGradient(x0, y0, mPMoveCenter.x, mPMoveCenter.y,
+//                new int[]{0x99000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+//        mPaintShader.setShader(half1);
+//        mPathTmp.reset();
+//        mPathTmp.moveTo(mPBoundary1.x, mPBoundary1.y);
+//        mPathTmp.quadTo(mPBezier1Control.x, mPBezier1Control.y, x1, y1);
+//        mPathTmp.quadTo(mPBezier2Control.x, mPBezier2Control.y, mPBoundary2.x, mPBoundary2.y);
+//        mPathTmp.lineTo(mPBoundary1.x, mPBoundary1.y);
+//        mPathTmp.close();
+//        canvas.drawPath(mPathTmp, mPaintShader);
+//        mPaintShader.setShader(null);
 
         // 翻页脚
         canvas.clipPath(mPathPage2, Region.Op.INTERSECT);
