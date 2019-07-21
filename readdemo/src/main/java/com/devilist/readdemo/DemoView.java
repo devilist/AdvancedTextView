@@ -1,5 +1,5 @@
 /*
- * Copyright  2019  admin
+ * Copyright  2019  zengp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -69,7 +70,7 @@ public class DemoView extends View {
         paint0.setTextSize(46);
         paint1 = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint1.setColor(Color.BLACK);
-        paint1.setTextSize(46);
+        paint1.setTextSize(48);
         paint2 = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint2.setColor(Color.BLUE);
         paint2.setTextSize(16);
@@ -107,15 +108,24 @@ public class DemoView extends View {
         matrix.setRectToRect(bmpRect, oriRect, Matrix.ScaleToFit.FILL);
         canvas.drawBitmap(bitmap, matrix, paint00);
         int ori = canvas.saveLayer(0, 0, getWidth(), getHeight(), paint1, Canvas.ALL_SAVE_FLAG);
-        canvas.drawText("锄禾日当午", getWidth() / 3, getHeight() / 3, paint1);
+        paint1.setColor(Color.RED);
+        drawText(canvas, StringUtil.str_hanzi, 0);
         canvas.restoreToCount(ori);
 
-        canvas.saveLayer(getWidth() + transX - 5, -5, getWidth() + transX + 40, getHeight() + 5, paint00, Canvas.ALL_SAVE_FLAG);
+        canvas.saveLayer(getWidth() + transX - 5, -5, getWidth() + transX + 50, getHeight() + 5, paint00, Canvas.ALL_SAVE_FLAG);
         LinearGradient half1 = new LinearGradient(getWidth() + transX, getHeight() / 2,
-                getWidth() + transX + 40, getHeight() / 2,
-                new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+                getWidth() + transX + 50, getHeight() / 2,
+                new int[]{0x66000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
         paint00.setShader(half1);
-        canvas.drawRect(getWidth() + transX - 5, -5, getWidth() + transX + 40, getHeight() + 5, paint00);
+        canvas.drawRect(getWidth() + transX - 5, -5, getWidth() + transX + 50, getHeight() + 5, paint00);
+        canvas.restoreToCount(ori);
+
+        canvas.saveLayer(transX - 50, -5, transX + 5, getHeight() + 5, paint00, Canvas.ALL_SAVE_FLAG);
+        LinearGradient half2 = new LinearGradient(transX, getHeight() / 2,
+                transX - 50, getHeight() / 2,
+                new int[]{0x66000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+        paint00.setShader(half2);
+        canvas.drawRect(transX - 50, -5, transX + 5, getHeight() + 5, paint00);
         canvas.restoreToCount(ori);
 
         canvas.saveLayer(transX, 0, getWidth() + transX, getHeight(), paint00, Canvas.ALL_SAVE_FLAG);
@@ -124,7 +134,29 @@ public class DemoView extends View {
         matrix.reset();
         matrix.setRectToRect(bmpRect, oriRect, Matrix.ScaleToFit.FILL);
         canvas.drawBitmap(bitmap, matrix, paint00);
-        canvas.drawText("汗滴禾下土", getWidth() / 3 + transX, getHeight() / 3, paint0);
+        paint1.setColor(Color.BLACK);
+        drawText(canvas, StringUtil.str_hanzi, transX);
         canvas.restoreToCount(ori);
+    }
+
+    private void drawText(Canvas canvas, String text, float transX) {
+
+        float rowH = paint1.getTextSize() * 1.3f;
+        float currentHeight = getPaddingTop() + rowH;
+        float currentPos = getPaddingLeft() + transX;
+
+        for (int i = 0; i < text.length(); i++) {
+            if (currentHeight > getHeight() - getPaddingBottom())
+                break;
+            if (currentPos > getWidth() - getPaddingRight() + transX) {
+                currentPos = getPaddingLeft() + transX;
+                currentHeight += rowH;
+            }
+            String s = String.valueOf(text.charAt(i));
+            float sWidth = StaticLayout.getDesiredWidth(s, 0, 1, paint1);
+            canvas.drawText(s, currentPos, currentHeight, paint1);
+            currentPos = currentPos + sWidth + 5;
+        }
+
     }
 }

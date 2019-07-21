@@ -30,9 +30,9 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Shader;
+import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -42,6 +42,7 @@ public class DemoView1 extends View {
     private static final String TAG = "DemoView1";
 
     private static float MIN_POSITION_X = 20;
+    private static float THRESHOLD_MOTION_PAGE_TURN = 10;
 
     private float mPageW, mPageH;  // 宽高
     private PointF mP0 = new PointF();  // 起始点点
@@ -64,11 +65,11 @@ public class DemoView1 extends View {
     private PointF mPEdge1Shader = new PointF(); // x轴交点
     private PointF mPEdge2Shader = new PointF(); // y轴交点
 
+    private PointF mPMoveOpt = new PointF();  // 修正
+
     private Path mPathPage1 = new Path();
     private Path mPathPage2 = new Path();
     private Path mPathTmp = new Path();
-
-    private int mTouchArea = 0;
 
     private PointF oriP = new PointF();
     TextPaint mPaintText;
@@ -76,6 +77,7 @@ public class DemoView1 extends View {
     Paint mPaintLine;
     Bitmap bitmap, bitmap1;
 
+    private PageTurn mTurnManager;
 
     public DemoView1(Context context) {
         super(context);
@@ -95,7 +97,7 @@ public class DemoView1 extends View {
     private void initView() {
         mPaintText = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mPaintText.setColor(Color.RED);
-        mPaintText.setTextSize(46);
+        mPaintText.setTextSize(48);
         mPaintShader = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mPaintShader.setColor(Color.BLUE);
         mPaintShader.setTextSize(16);
@@ -104,6 +106,111 @@ public class DemoView1 extends View {
 
         bitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.bg1);
         bitmap1 = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.bg2);
+        mTurnManager = new PageTurn();
+        mTurnManager.reset();
+    }
+
+    // 翻页操作管理
+    private class PageTurn {
+        // 触摸位置
+        final class Area {
+            static final int none = -1;
+            static final int top_left = 0;
+            static final int top_right = 1;
+            static final int bottom_left = 2;
+            static final int bottom_right = 3;
+            static final int center_left = 4;
+            static final int center_right = 5;
+        }
+
+        // 翻页方向
+        final class Direction {
+            static final int none = -1;
+            static final int left_to_right = 0;
+            static final int right_to_left = 1;
+        }
+
+        // 翻页的起始点
+        final class Anchor {
+            static final int none = -1;
+            static final int top = 0;
+            static final int center = 1;
+            static final int bottom = 2;
+        }
+
+        boolean isValid = false;
+        boolean isCalFinish = false;
+
+        int touchArea = Area.none;
+        int turnDirection = Direction.none;
+        int turnAnchor = Anchor.none;
+
+        private PointF touchDown = new PointF();
+
+        void reset() {
+            isValid = false;
+            isCalFinish = false;
+            touchArea = Area.none;
+            turnDirection = Direction.none;
+            turnAnchor = Anchor.none;
+            touchDown.set(-1, -1);
+        }
+
+        void calTouchArea(float downX, float downY) {
+            this.touchDown.set(downX, downY);
+            if (downY <= Math.min(mPageW - MIN_POSITION_X, mPageH - (mPageW - MIN_POSITION_X))) {
+                if (downX >= mPageW / 2) touchArea = Area.top_right;
+                else touchArea = Area.top_left;
+            } else if (downY >= Math.max(mPageW - MIN_POSITION_X, mPageH - (mPageW - MIN_POSITION_X))) {
+                if (downX >= mPageW / 2) touchArea = Area.bottom_right;
+                else touchArea = Area.bottom_left;
+            } else {
+                if (downX >= mPageW / 2) touchArea = Area.center_right;
+                else touchArea = Area.center_left;
+            }
+        }
+
+        void calTurnMode(float moveX, float moveY) {
+            if (isCalFinish) return;
+            float d = (float) Math.sqrt((moveX - touchDown.x) * (moveX - touchDown.x)
+                    + (moveY - touchDown.y) * (moveY - touchDown.y));
+            // 滑动距离太小
+            if (d < THRESHOLD_MOTION_PAGE_TURN) {
+                isValid = false;
+                return;
+            }
+
+            isCalFinish = true;
+
+            // 竖向滑动
+            if (Math.abs(moveY - touchDown.y) >= 1.732 * Math.abs(moveX - touchDown.x)) {
+                isValid = false;
+                return;
+            }
+
+            turnDirection = moveX - touchDown.x >= 0 ? Direction.left_to_right : Direction.right_to_left;
+
+            if (touchArea == Area.center_left || touchArea == Area.center_right) {
+                turnAnchor = Anchor.center;
+            } else if (touchArea == Area.top_right) {
+                turnAnchor = Anchor.top;
+            } else if (touchArea == Area.bottom_right) {
+                turnAnchor = Anchor.bottom;
+            } else if (touchArea == Area.top_left) {
+                if (turnDirection == Direction.left_to_right) {
+                    turnAnchor = Anchor.bottom;
+                } else {
+                    turnAnchor = Anchor.top;
+                }
+            } else if (touchArea == Area.bottom_left) {
+                if (turnDirection == Direction.left_to_right) {
+                    turnAnchor = Anchor.top;
+                } else {
+                    turnAnchor = Anchor.bottom;
+                }
+            }
+            isValid = true;
+        }
     }
 
     @Override
@@ -112,46 +219,72 @@ public class DemoView1 extends View {
         mPageH = getHeight();
         oriP.set(event.getX(), event.getY());
 
-        mPMove.set(event.getX(), event.getY());
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getY() <= Math.min(mPageW - MIN_POSITION_X, mPageH - (mPageW - MIN_POSITION_X))) {
-                    mP0.set(mPageW, 0);
-                    mTouchArea = 0;
-                } else if (event.getY() >= Math.max(mPageW - MIN_POSITION_X, mPageH - (mPageW - MIN_POSITION_X))) {
-                    mP0.set(mPageW, mPageH);
-                    mTouchArea = 0;
-                } else {
-                    mTouchArea = 1;
-                }
+                mPMove.set(event.getX(), event.getY());
+                mTurnManager.reset();
+                mTurnManager.calTouchArea(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
+                mTurnManager.calTurnMode(event.getX(), event.getY());
+                if (mTurnManager.isCalFinish && mTurnManager.isValid) {
+                    if (mTurnManager.turnAnchor == PageTurn.Anchor.top) {
+                        mP0.set(mPageW, 0);
+                    } else if (mTurnManager.turnAnchor == PageTurn.Anchor.bottom) {
+                        mP0.set(mPageW, mPageH);
+                    } else if (mTurnManager.turnAnchor == PageTurn.Anchor.center) {
+                        mP0.set(mPageW, mPageH / 2);
+                    }
+                    mPMove.set(event.getX(), event.getY());
+                    calPathAtArea();
+                }
+
                 break;
             case MotionEvent.ACTION_UP:
+                if (mTurnManager.isCalFinish && mTurnManager.isValid) {
+                    mPMove.set(event.getX(), event.getY());
+                    calPathAtArea();
+                }
                 break;
         }
-        calPathAtArea();
         invalidate();
         return true;
     }
 
     private void calPathAtArea() {
-        if (mTouchArea == 0) {
-            calPath();
-        }
-        if (mTouchArea == 1) {
+        if (mTurnManager.turnAnchor == PageTurn.Anchor.center) {
             calPathRect();
+        } else {
+            calPath();
         }
     }
 
     private void calPath() {
-        //判断触点位置是否在边界圆外面
+        //判断触点位置是否在边界圆外面.要根据翻页方向分情况处理
+        // 向右翻页，触摸点在左半部分，则矫正点的位置，让翻页效果更真实
+//        if (mTurnManager.turnDirection == PageTurn.Direction.left_to_right
+//                && (mTurnManager.touchArea == PageTurn.Area.top_left
+//                || mTurnManager.touchArea == PageTurn.Area.bottom_left)) {
+//            Log.e(TAG, "修正");
+//        }
+        // 调整x的变化率
+        // xFinal = -a*x*x/W/W + b*W -W ; b-a =2 ,a>0
+        mPMove.x = -1.2f * (float) Math.pow(mPMove.x, 3) / (float) Math.pow(mPageW, 2) + 3.2f * mPMove.x - mPageW;
+        if (mP0.y == 0) {
+            mPMove.y = mPMove.y >= mPageH / 2 ? (mPageH - mPMove.y) : mPMove.y;
+        } else {
+            mPMove.y = mPMove.y <= mPageH / 2 ? (mPageH - mPMove.y) : mPMove.y;
+        }
+
+        mPMoveOpt.set(mPMove.x, mPMove.y);
+
         float r = (float) Math.sqrt((mPMove.x - MIN_POSITION_X) * (mPMove.x - MIN_POSITION_X)
                 + (mPMove.y - mP0.y) * (mPMove.y - mP0.y));
         if (r > mPageW - MIN_POSITION_X) { // 调整move坐标
             float sin = Math.abs((mPMove.y - mP0.y) / r);
-            mPMove.x = (mPageW - MIN_POSITION_X) * (float) Math.sqrt(1 - sin * sin);
+            mPMove.x = MIN_POSITION_X + (mPageW - MIN_POSITION_X) * (float) Math.sqrt(1 - sin * sin)
+                    * Math.signum(mPMove.x - MIN_POSITION_X);
             mPMove.y = mP0.y == 0 ? (mPageW - MIN_POSITION_X) * sin : (mP0.y - (mPageW - MIN_POSITION_X) * sin);
         }
         // 斜率
@@ -166,7 +299,6 @@ public class DemoView1 extends View {
         // 求出跟 x轴交点，这个点为边界位置
         float xmin = -k * (mP0.y - pMove_MoveCenter.y) + pMove_MoveCenter.x;
         if (xmin < MIN_POSITION_X) {
-            Log.e(TAG, " xmin: " + xmin);
             // 越界了，按照边界值处理，需要矫正move位置
             // y = -(1/k)(x- MIN_POSITION_X) + mP0.y;
             // y = y = k*(x -mP0.x) + mP0.y
@@ -265,36 +397,30 @@ public class DemoView1 extends View {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        // 上面一页
+        // 上面一页 和背景
         mPaintText.setColor(Color.RED);
         int ori = canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintText, Canvas.ALL_SAVE_FLAG);
-        Matrix matrix = new Matrix();
-        RectF oriRect = new RectF(0, 0, getWidth(), getHeight());
-        RectF bmpRect = new RectF(0, 0, bitmap.getWidth(), getHeight());
-        matrix.setRectToRect(bmpRect, oriRect, Matrix.ScaleToFit.FILL);
-        canvas.drawBitmap(bitmap, matrix, mPaintText);
-        canvas.drawText("锄禾日当午", getWidth() / 3, getHeight() / 3, mPaintText);
+        drawBg(canvas);
+        drawText(canvas, StringUtil.str_hanzi);
         canvas.restoreToCount(ori);
 
-
-        if (mTouchArea == 0) {
-            drawPageTurnFromCorner(ori, canvas);
-            // 辅助线
-//            drawLines(ori, canvas);
+        if (!mTurnManager.isCalFinish || !mTurnManager.isValid) {
+            return;
         }
-        if (mTouchArea == 1) {
+        if (mTurnManager.turnAnchor == PageTurn.Anchor.center) {
             // 下面一页
-            mPaintText.setColor(Color.BLACK);
             canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintText, Canvas.ALL_SAVE_FLAG);
+            mPaintText.setColor(Color.BLACK);
             canvas.clipPath(mPathPage1, Region.Op.INTERSECT);
-            canvas.drawText("汗滴禾下土", 2 * getWidth() / 3, 3 * getHeight() / 4, mPaintText);
+            drawBg(canvas);
+            drawText(canvas, StringUtil.str_hanzi);
             // 背后阴影
             float x0 = (mPMove.x + mPMoveCenter.x) / 2;
             float y0 = mP0.y;
             float x1 = (mP0.x + mPMoveCenter.x) / 2;
             float y1 = mP0.y;
             LinearGradient half1 = new LinearGradient(x0, y0, x1, y1,
-                    new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+                    new int[]{0x99000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
             mPaintShader.setShader(half1);
             canvas.drawRect(new RectF(x0, 0, x1, mPageH), mPaintShader);
             mPaintShader.setShader(null);
@@ -310,13 +436,26 @@ public class DemoView1 extends View {
             x1 = 2 * mPMove.x - x0;
             y1 = mP0.y;
             half1 = new LinearGradient(x0, y0, x1, y1,
-                    new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+                    new int[]{0x99000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
             mPaintShader.setShader(half1);
             canvas.drawRect(new RectF(x0, 0, x1, mPageH), mPaintShader);
             mPaintShader.setShader(null);
             canvas.restoreToCount(ori);
+        } else {
+
+            drawPageTurnFromCorner(ori, canvas);
+            // 辅助线
+            drawLines(ori, canvas);
         }
 
+    }
+
+    private void drawBg(Canvas canvas) {
+        Matrix matrix = new Matrix();
+        RectF oriRect = new RectF(0, 0, getWidth(), getHeight());
+        RectF bmpRect = new RectF(0, 0, bitmap.getWidth(), getHeight());
+        matrix.setRectToRect(bmpRect, oriRect, Matrix.ScaleToFit.FILL);
+        canvas.drawBitmap(bitmap, matrix, mPaintText);
     }
 
     private void drawPageTurnFromCorner(int ori, Canvas canvas) {
@@ -324,14 +463,15 @@ public class DemoView1 extends View {
         mPaintText.setColor(Color.BLACK);
         canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintText, Canvas.ALL_SAVE_FLAG);
         canvas.clipPath(mPathPage1, Region.Op.INTERSECT);
-        canvas.drawText("汗滴禾下土", 2 * getWidth() / 3, 3 * getHeight() / 4, mPaintText);
+        drawBg(canvas);
+        drawText(canvas, StringUtil.str_hanzi);
 
         // 背后阴影
         mPaintShader.setStyle(Paint.Style.FILL);
         float x0 = (mPMove.x + mPMoveCenter.x) / 2;
         float y0 = (mPMove.y + mPMoveCenter.y) / 2;
         LinearGradient half1 = new LinearGradient(x0, y0, mPMoveCenter.x, mPMoveCenter.y,
-                new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+                new int[]{0x99000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
         mPaintShader.setShader(half1);
         mPathTmp.reset();
         mPathTmp.moveTo(mPBoundary1.x, mPBoundary1.y);
@@ -361,9 +501,9 @@ public class DemoView1 extends View {
         canvas.clipPath(mPathPage1, Region.Op.DIFFERENCE);
 
         half1 = new LinearGradient(mPEdge1Center.x, mPEdge1Center.y, mPEdge1Shader.x, mPEdge1Shader.y,
-                new int[]{0x11000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+                new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
         LinearGradient half2 = new LinearGradient(mPEdge2Center.x, mPEdge2Center.y, mPEdge2Shader.x, mPEdge2Shader.y,
-                new int[]{0x11000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
+                new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
         mPathTmp.reset();
         mPathTmp.moveTo(mPMoveShader.x, mPMoveShader.y);
         mPathTmp.lineTo(mPEdge1Shader.x, mPEdge1Shader.y);
@@ -385,6 +525,27 @@ public class DemoView1 extends View {
         mPaintShader.setShader(half2);
         canvas.drawPath(mPathTmp, mPaintShader);
         canvas.restoreToCount(ori);
+    }
+
+    private void drawText(Canvas canvas, String text) {
+
+        float rowH = mPaintText.getTextSize() * 1.3f;
+        float currentHeight = getPaddingTop() + rowH;
+        float currentPos = getPaddingLeft();
+
+        for (int i = 0; i < text.length(); i++) {
+            if (currentHeight > getHeight() - getPaddingBottom())
+                break;
+            if (currentPos > getWidth() - getPaddingRight()) {
+                currentPos = getPaddingLeft();
+                currentHeight += rowH;
+            }
+            String s = String.valueOf(text.charAt(i));
+            float sWidth = StaticLayout.getDesiredWidth(s, 0, 1, mPaintText);
+            canvas.drawText(s, currentPos, currentHeight, mPaintText);
+            currentPos = currentPos + sWidth + 5;
+        }
+
     }
 
     private void drawLines(int ori, Canvas canvas) {
@@ -420,6 +581,12 @@ public class DemoView1 extends View {
         canvas.drawLine(mPMoveShader.x, mPMoveShader.y, mPEdge1Shader.x, mPEdge1Shader.y, mPaintLine);
         canvas.drawLine(mPEdge2Center.x, mPEdge2Center.y, mPEdge2Shader.x, mPEdge2Shader.y, mPaintLine);
         canvas.drawLine(mPEdge1Center.x, mPEdge1Center.y, mPEdge1Shader.x, mPEdge1Shader.y, mPaintLine);
+
+        mPaintLine.setStyle(Paint.Style.FILL);
+        mPaintLine.setColor(Color.BLUE);
+        canvas.drawCircle(mPMoveOpt.x, mPMoveOpt.y, 10, mPaintLine);
+        mPaintLine.setColor(Color.RED);
+        canvas.drawCircle(mPMove.x, mPMove.y, 10, mPaintLine);
         canvas.restoreToCount(ori);
     }
 }
