@@ -109,7 +109,7 @@ public class DemoView extends View {
         canvas.drawBitmap(bitmap, matrix, paint00);
         int ori = canvas.saveLayer(0, 0, getWidth(), getHeight(), paint1, Canvas.ALL_SAVE_FLAG);
         paint1.setColor(Color.RED);
-        drawText(canvas, StringUtil.str_hanzi, 0);
+        drawText(canvas, StringUtil.str_2, 0);
         canvas.restoreToCount(ori);
 
         canvas.saveLayer(getWidth() + transX - 5, -5, getWidth() + transX + 50, getHeight() + 5, paint00, Canvas.ALL_SAVE_FLAG);
@@ -135,7 +135,7 @@ public class DemoView extends View {
         matrix.setRectToRect(bmpRect, oriRect, Matrix.ScaleToFit.FILL);
         canvas.drawBitmap(bitmap, matrix, paint00);
         paint1.setColor(Color.BLACK);
-        drawText(canvas, StringUtil.str_hanzi, transX);
+        drawText(canvas, StringUtil.str_1, transX);
         canvas.restoreToCount(ori);
     }
 
@@ -146,13 +146,13 @@ public class DemoView extends View {
         float currentPos = getPaddingLeft() + transX;
 
         for (int i = 0; i < text.length(); i++) {
-            if (currentHeight > getHeight() - getPaddingBottom())
-                break;
-            if (currentPos > getWidth() - getPaddingRight() + transX) {
+            String s = String.valueOf(text.charAt(i));
+            if (s.equals("\n") ||currentPos > getWidth() - getPaddingRight() + transX) {
+                if (currentHeight > getHeight() - getPaddingBottom())
+                    break;
                 currentPos = getPaddingLeft() + transX;
                 currentHeight += rowH;
             }
-            String s = String.valueOf(text.charAt(i));
             float sWidth = StaticLayout.getDesiredWidth(s, 0, 1, paint1);
             canvas.drawText(s, currentPos, currentHeight, paint1);
             currentPos = currentPos + sWidth + 5;

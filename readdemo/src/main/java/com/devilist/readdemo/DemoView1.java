@@ -19,20 +19,24 @@ package com.devilist.readdemo;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Shader;
+import android.text.Html;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -66,18 +70,22 @@ public class DemoView1 extends View {
     private PointF mPEdge2Shader = new PointF(); // y轴交点
 
     private PointF mPMoveOpt = new PointF();  // 修正
+    private PointF mPMoveOri = new PointF();
 
     private Path mPathPage1 = new Path();
     private Path mPathPage2 = new Path();
     private Path mPathTmp = new Path();
 
-    private PointF oriP = new PointF();
-    TextPaint mPaintText;
-    Paint mPaintShader;
-    Paint mPaintLine;
-    Bitmap bitmap, bitmap1;
+    private TextPaint mPaintText;
+    private Paint mPaintShader;
+    private Paint mPaintLine;
 
     private PageTurn mTurnManager;
+
+    private Camera mCamera;
+
+    Bitmap bitmap, bitmap1;
+
 
     public DemoView1(Context context) {
         super(context);
@@ -97,7 +105,7 @@ public class DemoView1 extends View {
     private void initView() {
         mPaintText = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mPaintText.setColor(Color.RED);
-        mPaintText.setTextSize(48);
+        mPaintText.setTextSize(52);
         mPaintShader = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mPaintShader.setColor(Color.BLUE);
         mPaintShader.setTextSize(16);
@@ -108,6 +116,8 @@ public class DemoView1 extends View {
         bitmap1 = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.bg2);
         mTurnManager = new PageTurn();
         mTurnManager.reset();
+
+        mCamera = new Camera();
     }
 
     // 翻页操作管理
@@ -217,7 +227,7 @@ public class DemoView1 extends View {
     public boolean onTouchEvent(MotionEvent event) {
         mPageW = getWidth();
         mPageH = getHeight();
-        oriP.set(event.getX(), event.getY());
+        mPMoveOri.set(event.getX(), event.getY());
 
 
         switch (event.getAction()) {
@@ -354,7 +364,6 @@ public class DemoView1 extends View {
         mPMoveShader.x = (mPEdge2Shader.y - mPEdge1Shader.y + k1 * mPEdge1Shader.x - k2 * mPEdge2Shader.x) / (k1 - k2);
         mPMoveShader.y = k1 * (mPMoveShader.x - mPEdge1Shader.x) + mPEdge1Shader.y;
 
-
         mPathPage1.reset();
         mPathPage1.moveTo(mPBoundary1.x, mPBoundary1.y);
         mPathPage1.quadTo(mPBezier1Control.x, mPBezier1Control.y, mPEdge1Center.x, mPEdge1Center.y);
@@ -396,12 +405,13 @@ public class DemoView1 extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-
+        canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
         // 上面一页 和背景
+        mPaintText.setAlpha(255);
         mPaintText.setColor(Color.RED);
         int ori = canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintText, Canvas.ALL_SAVE_FLAG);
         drawBg(canvas);
-        drawText(canvas, StringUtil.str_hanzi);
+        drawText(canvas, StringUtil.str_1);
         canvas.restoreToCount(ori);
 
         if (!mTurnManager.isCalFinish || !mTurnManager.isValid) {
@@ -411,9 +421,10 @@ public class DemoView1 extends View {
             // 下面一页
             canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintText, Canvas.ALL_SAVE_FLAG);
             mPaintText.setColor(Color.BLACK);
+            mPaintText.setAlpha(255);
             canvas.clipPath(mPathPage1, Region.Op.INTERSECT);
             drawBg(canvas);
-            drawText(canvas, StringUtil.str_hanzi);
+            drawText(canvas, StringUtil.str_2);
             // 背后阴影
             float x0 = (mPMove.x + mPMoveCenter.x) / 2;
             float y0 = mP0.y;
@@ -428,6 +439,18 @@ public class DemoView1 extends View {
             mPaintShader.setColor(0xffffffff);
             canvas.clipPath(mPathPage2, Region.Op.INTERSECT);
             canvas.drawRect(new RectF(mPMove.x, 0, mPMoveCenter.x, mPageH), mPaintShader);
+
+            // 翻页文字
+            mCamera.save();
+            canvas.translate(mPMoveCenter.x, mPMoveCenter.y);
+            mCamera.rotateY(180);
+            mCamera.applyToCanvas(canvas);
+            canvas.translate(-mPMoveCenter.x, -mPMoveCenter.y);
+            mCamera.restore();
+            mPaintText.setColor(Color.RED);
+            mPaintText.setAlpha(20);
+            drawText(canvas, StringUtil.str_1);
+
             canvas.restoreToCount(ori);
 
             // 前面阴影
@@ -459,14 +482,15 @@ public class DemoView1 extends View {
     }
 
     private void drawPageTurnFromCorner(int ori, Canvas canvas) {
-        // 下面一页
+        // 下面一页 页面文字
         mPaintText.setColor(Color.BLACK);
+        mPaintText.setAlpha(255);
         canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintText, Canvas.ALL_SAVE_FLAG);
         canvas.clipPath(mPathPage1, Region.Op.INTERSECT);
         drawBg(canvas);
-        drawText(canvas, StringUtil.str_hanzi);
+        drawText(canvas, StringUtil.str_2);
 
-        // 背后阴影
+        // 翻页垂分线处阴影
         mPaintShader.setStyle(Paint.Style.FILL);
         float x0 = (mPMove.x + mPMoveCenter.x) / 2;
         float y0 = (mPMove.y + mPMoveCenter.y) / 2;
@@ -481,42 +505,42 @@ public class DemoView1 extends View {
         mPathTmp.close();
         canvas.drawPath(mPathTmp, mPaintShader);
         mPaintShader.setShader(null);
-
-//        mPaintShader.setStyle(Paint.Style.FILL);
-//        float x0 = (mPMove.x + mPMoveCenter.x) / 2;
-//        float y0 = (mPMove.y + mPMoveCenter.y) / 2;
-//        float x1 = (3 * mPMoveCenter.x + mP0.x) / 4;
-//        float y1 = (3 * mPMoveCenter.y + mP0.y) / 4;
-//        LinearGradient half1 = new LinearGradient(x0, y0, mPMoveCenter.x, mPMoveCenter.y,
-//                new int[]{0x99000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
-//        mPaintShader.setShader(half1);
-//        mPathTmp.reset();
-//        mPathTmp.moveTo(mPBoundary1.x, mPBoundary1.y);
-//        mPathTmp.quadTo(mPBezier1Control.x, mPBezier1Control.y, x1, y1);
-//        mPathTmp.quadTo(mPBezier2Control.x, mPBezier2Control.y, mPBoundary2.x, mPBoundary2.y);
-//        mPathTmp.lineTo(mPBoundary1.x, mPBoundary1.y);
-//        mPathTmp.close();
-//        canvas.drawPath(mPathTmp, mPaintShader);
-//        mPaintShader.setShader(null);
-
-        // 翻页脚
-        canvas.clipPath(mPathPage2, Region.Op.INTERSECT);
+        /////////////////////////////////////////////////////////////////////////////////////////
+        // 翻页的脚
+        canvas.clipPath(mPathPage2, Region.Op.INTERSECT); // 与运算,先把整个角裁出来
         mPathTmp.reset();
         mPathTmp.moveTo(mPMove.x, mPMove.y);
         mPathTmp.lineTo(mPBezier1Center.x, mPBezier1Center.y);
         mPathTmp.lineTo(mPBezier2Center.x, mPBezier2Center.y);
         mPathTmp.close();
-        canvas.clipPath(mPathTmp, Region.Op.INTERSECT);
+        canvas.clipPath(mPathTmp, Region.Op.INTERSECT); // 与运算,裁去多余的两段贝塞尔曲线
+//        mPaintShader.setStyle(Paint.Style.FILL);
+//        mPaintShader.setColor(0xffffffff);
+//        canvas.drawPath(mPathPage2, mPaintShader);
+        canvas.drawColor(Color.WHITE);
 
-        mPaintShader.setStyle(Paint.Style.FILL);
-        mPaintShader.setColor(0xffffffff);
-        canvas.drawPath(mPathPage2, mPaintShader);
+        // 绘制页面背后反向的文字
+        double deg = Math.atan(Math.abs(mPMove.y - mP0.y) / Math.abs(mPMove.x - mP0.x));
+        deg = 90 - Math.toDegrees(deg);
+        deg = deg * (mP0.y == 0 ? -1 : 1);
+        // camera的绘制是倒着来的....
+        mCamera.save();
+        canvas.translate(mPMoveCenter.x, mPMoveCenter.y);
+        canvas.rotate(-(float) deg);
+        mCamera.rotateX(180);
+        mCamera.applyToCanvas(canvas);
+        canvas.rotate((float) deg);
+        canvas.translate(-mPMoveCenter.x, -mPMoveCenter.y);
+        mCamera.restore();
+        mPaintText.setColor(Color.RED);
+        mPaintText.setAlpha(20);
+        drawText(canvas, StringUtil.str_2);
+
         canvas.restoreToCount(ori);
 
+        // 前面尖角处的阴影
         canvas.saveLayer(0, 0, getWidth(), getHeight(), mPaintShader, Canvas.ALL_SAVE_FLAG);
-        // 前面阴影
         canvas.clipPath(mPathPage1, Region.Op.DIFFERENCE);
-
         half1 = new LinearGradient(mPEdge1Center.x, mPEdge1Center.y, mPEdge1Shader.x, mPEdge1Shader.y,
                 new int[]{0x44000000, Color.TRANSPARENT}, new float[]{0, 1}, Shader.TileMode.CLAMP);
         LinearGradient half2 = new LinearGradient(mPEdge2Center.x, mPEdge2Center.y, mPEdge2Shader.x, mPEdge2Shader.y,
@@ -542,6 +566,7 @@ public class DemoView1 extends View {
         mPaintShader.setShader(half2);
         canvas.drawPath(mPathTmp, mPaintShader);
         canvas.restoreToCount(ori);
+
     }
 
     private void drawText(Canvas canvas, String text) {
@@ -551,13 +576,13 @@ public class DemoView1 extends View {
         float currentPos = getPaddingLeft();
 
         for (int i = 0; i < text.length(); i++) {
-            if (currentHeight > getHeight() - getPaddingBottom())
-                break;
-            if (currentPos > getWidth() - getPaddingRight()) {
+            String s = String.valueOf(text.charAt(i));
+            if (s.equals("\n") || currentPos > getWidth() - getPaddingRight()) {
+                if (currentHeight > getHeight() - getPaddingBottom())
+                    break;
                 currentPos = getPaddingLeft();
                 currentHeight += rowH;
             }
-            String s = String.valueOf(text.charAt(i));
             float sWidth = StaticLayout.getDesiredWidth(s, 0, 1, mPaintText);
             canvas.drawText(s, currentPos, currentHeight, mPaintText);
             currentPos = currentPos + sWidth + 5;
@@ -577,7 +602,7 @@ public class DemoView1 extends View {
         canvas.drawLine(0, mPageW - MIN_POSITION_X, mPageW, mPageW - MIN_POSITION_X, mPaintLine);
         canvas.drawLine(0, mPageH - (mPageW - MIN_POSITION_X), mPageW, mPageH - (mPageW - MIN_POSITION_X), mPaintLine);
 
-        canvas.drawLine(MIN_POSITION_X, mP0.y, oriP.x, oriP.y, mPaintLine);
+        canvas.drawLine(MIN_POSITION_X, mP0.y, mPMoveOri.x, mPMoveOri.y, mPaintLine);
 
         mPaintLine.setPathEffect(null);
         mPaintLine.setStrokeWidth(3);
