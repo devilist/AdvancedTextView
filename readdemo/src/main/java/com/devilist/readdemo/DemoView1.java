@@ -32,6 +32,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Shader;
+import android.os.Build;
 import android.text.Html;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -116,6 +117,9 @@ public class DemoView1 extends View {
         bitmap1 = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.bg2);
         mTurnManager = new PageTurn();
         mTurnManager.reset();
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN) { // 4.1.2
+            setLayerType(LAYER_TYPE_SOFTWARE, null);
+        }
 
         mCamera = new Camera();
     }
