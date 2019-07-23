@@ -15,4 +15,4 @@
  */
 
 include ':app'
-include ':library', ':readview'
+include ':library'
