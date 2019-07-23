@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-include ':app', ':readdemo'
+include ':app'
 include ':library', ':readview'
